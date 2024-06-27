@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Page</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .header {
+      background-color: #007bff;
+      color: white;
+      padding: 20px 0;
+      width: 100vw;
+      margin-left: calc(-50vw + 50%);
+      text-align: center;
+    }
+    .card {
+      background-color: #ffffff;
+    }
+    .form-group, .payment-method, .footer {
+      background-color: #e9ecef;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #777;
+    }
+    pre#apiRequest {
+      background-color: #343a40;
+      color: #ffffff;
+      padding: 20px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="text-center">Mercado Pago - Checkout Sample</h1>
+  </div>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="form-group">
+          <select class="form-control" id="siteSelector">
+            <option value="MLB" selected>MLB</option>
+            <option value="MLA">MLA</option>
+            <option value="MLM">MLM</option>
+          </select>
+        </div>
+        <h2 class="text-center">Order Summary</h2>
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Order #12345</h5>
+            <p class="card-text">Total: $10</p>
+            <p class="card-text">Items: 1</p>
+          </div>
+        </div>
+        <div class="payment-method">
+          <h2 class="text-center mt-4">Select Payment Method</h2>
+          <div class="mb-2">
+            <input type="radio" name="paymentMethod" id="choPro" value="CHO_PRO">
+            <label for="choPro">CHO PRO</label>
+          </div>
+          <div class="mb-2">
+            <input type="radio" name="paymentMethod" id="walletButton" value="WALLET_BUTTON">
+            <label for="walletButton">WALLET BUTTON</label>
+          </div>
+          <div class="mb-4">
+            <input type="radio" name="paymentMethod" id="choProShipping" value="CHO_PRO_SHIPPING">
+            <label for="choProShipping">CHO PRO (with shipping)</label>
+          </div>
+          <button id="payButton" class="btn btn-primary" disabled>Pay</button>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="form-group">
+          <h2 class="text-center">API Request Sample</h2>
+          <pre id="apiRequest">
+{
+  "order_id": 12345,
+  "amount": 99.99,
+  "currency": "USD",
+  "payment_method": "",
+  "site": ""
+}
+          </pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    This is a sample of some of the integrations available in Mercado Pago. All requests made here are in a Sandbox Environment, so they won't create real payments.
+  </div>
+
+  <script>
+    const apiSamples = {
+      CHO_PRO: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+--header 'Authorization: ACCESS_TOKEN' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "items": [
+        {
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": 10
+        }
+    ]
+}'`,
+      WALLET_BUTTON: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+--header 'Authorization: ACCESS_TOKEN' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "items": [
+        {
+            "title": "New Light Saber",
+            "description": "May the force be with you",
+            "picture_url": "",
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": 10
+        }
+    ],
+    "purpose": "wallet_purchase"
+}'`,
+      CHO_PRO_SHIPPING: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+--header 'Authorization: ACCESS_TOKEN' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "items": [
+        {
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": 10
+        }
+    ],
+    "shipments": {
+        "mode": "me2",
+        "local_pickup": false,
+        "dimensions": "20x20x20,20"
+    }
+}'`
+    };
+
+    const accessTokens = {
+      MLB: 'Bearer APP_USR-7092-062714-58ec51100130234f3daaba44e23503e6-1877315492',
+      MLA: 'Bearer APP_USR-7092-062713-fa561c421d6eec6b43e67504f14b9bda-1877266222',
+      MLM: 'Bearer APP_USR-7092-062713-4eb2abf5a4da0901b807b826f40bdfa7-1874743543'
+    };
+
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+      input.addEventListener('change', function() {
+        document.getElementById('payButton').disabled = false;
+        updateApiRequest();
+      });
+    });
+
+    document.getElementById('payButton').addEventListener('click', function() {
+      const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "";
+      const selectedSite = document.getElementById('siteSelector').value;
+      const accessToken = accessTokens[selectedSite];
+      const apiUrl = 'https://api.mercadopago.com/checkout/preferences';
+      const requestData = getRequestData(selectedPaymentMethod);
+
+      console.log('Request Data:', requestData);
+      console.log('Access Token:', accessToken);
+
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': accessToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Response Data:', data);
+        if (data.init_point) {
+          window.location.href = data.init_point;
+        } else {
+          console.error('Error: init_point not found in response');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+
+    document.getElementById('siteSelector').addEventListener('change', function() {
+      updateApiRequest();
+    });
+
+    function updateApiRequest() {
+      const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "";
+      const selectedSite = document.getElementById('siteSelector').value;
+      document.getElementById('apiRequest').innerText = apiSamples[selectedPaymentMethod] || `{
+  "order_id": 12345,
+  "amount": 99.99,
+  "currency": "USD",
+  "payment_method": "${selectedPaymentMethod}",
+  "site": "${selectedSite}"
+}`;
+    }
+
+    function getRequestData(paymentMethod) {
+      switch (paymentMethod) {
+        case 'CHO_PRO':
+          return {
+            items: [
+              {
+                quantity: 1,
+                currency_id: "BRL",
+                unit_price: 10
+              }
+            ]
+          };
+        case 'WALLET_BUTTON':
+          return {
+            items: [
+              {
+                title: "New Light Saber",
+                description: "May the force be with you",
+                picture_url: "",
+                quantity: 1,
+                currency_id: "BRL",
+                unit_price: 10
+              }
+            ],
+            purpose: "wallet_purchase"
+          };
+        case 'CHO_PRO_SHIPPING':
+          return {
+            items: [
+              {
+                quantity: 1,
+                currency_id: "BRL",
+                unit_price: 10
+              }
+            ],
+            shipments: {
+              mode: "me2",
+              local_pickup: false,
+              dimensions: "20x20x20,20"
+            }
+          };
+        default:
+          return {};
+      }
+    }
+  </script>
+</body>
+</html>
