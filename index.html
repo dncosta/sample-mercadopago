@@ -48,8 +48,9 @@
       <div class="col-md-6 mb-4">
         <div class="form-group">
           <select class="form-control" id="siteSelector">
-            <option value="MLB" selected>MLB</option>
+            <option value="" disabled selected>Select the country</option>
             <option value="MLA">MLA</option>
+            <option value="MLB">MLB</option>
             <option value="MLM">MLM</option>
           </select>
         </div>
@@ -57,15 +58,17 @@
         <div class="card mb-4">
           <div class="card-body">
             <h5 class="card-title">Order #12345</h5>
-            <p class="card-text">Total: $10</p>
+            <p class="text">Product: New Light Saber</p>
+            <p class="card-text">Description: May the force be with you</p>
+            <p class="card-text">Total: <span id="totalAmount"></span></p>
             <p class="card-text">Items: 1</p>
           </div>
         </div>
+          <h2 class="text-center mt-4">Select Checkout to test</h2>
         <div class="payment-method">
-          <h2 class="text-center mt-4">Select Payment Method</h2>
           <div class="mb-2">
             <input type="radio" name="paymentMethod" id="choPro" value="CHO_PRO">
-            <label for="choPro">CHO PRO</label>
+            <label for="choPro">CHECHOUT PRO</label>
           </div>
           <div class="mb-2">
             <input type="radio" name="paymentMethod" id="walletButton" value="WALLET_BUTTON">
@@ -73,22 +76,16 @@
           </div>
           <div class="mb-4">
             <input type="radio" name="paymentMethod" id="choProShipping" value="CHO_PRO_SHIPPING">
-            <label for="choProShipping">CHO PRO (with shipping)</label>
+            <label for="choProShipping">CHECHOUT PRO (with shipping)</label>
           </div>
-          <button id="payButton" class="btn btn-primary" disabled>Pay</button>
+          <button id="payButton" class="btn btn-primary btn-block" disabled>Pay</button>
         </div>
       </div>
       <div class="col-md-6 mb-4">
         <div class="form-group">
           <h2 class="text-center">API Request Sample</h2>
           <pre id="apiRequest">
-{
-  "order_id": 12345,
-  "amount": 99.99,
-  "currency": "USD",
-  "payment_method": "",
-  "site": ""
-}
+API requests will be shown here.
           </pre>
         </div>
       </div>
@@ -98,21 +95,32 @@
     This is a sample of some of the integrations available in Mercado Pago. All requests made here are in a Sandbox Environment, so they won't create real payments.
   </div>
 
+  <!-- Modal -->
+  <div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="countryModalLabel">Attention</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Please select a country.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
     const apiSamples = {
-      CHO_PRO: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
---header 'Authorization: ACCESS_TOKEN' \\
---header 'Content-Type: application/json' \\
---data '{
-    "items": [
-        {
-            "quantity": 1,
-            "currency_id": "BRL",
-            "unit_price": 10
-        }
-    ]
-}'`,
-      WALLET_BUTTON: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+      CHO_PRO: (currency, price) => `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
 --header 'Authorization: ACCESS_TOKEN' \\
 --header 'Content-Type: application/json' \\
 --data '{
@@ -122,21 +130,39 @@
             "description": "May the force be with you",
             "picture_url": "",
             "quantity": 1,
-            "currency_id": "BRL",
-            "unit_price": 10
+            "currency_id": "${currency}",
+            "unit_price": ${price}
         }
-    ],
-    "purpose": "wallet_purchase"
+    ]
 }'`,
-      CHO_PRO_SHIPPING: `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+      WALLET_BUTTON: (currency, price) => `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
 --header 'Authorization: ACCESS_TOKEN' \\
 --header 'Content-Type: application/json' \\
 --data '{
     "items": [
         {
+            "title": "New Light Saber",
+            "description": "May the force be with you",
+            "picture_url": "",
             "quantity": 1,
-            "currency_id": "BRL",
-            "unit_price": 10
+            "currency_id": "${currency}",
+            "unit_price": ${price}
+        }
+    ],
+    "purpose": "wallet_purchase"
+}'`,
+      CHO_PRO_SHIPPING: (currency, price) => `curl --location --request POST 'https://api.mercadopago.com/checkout/preferences' \\
+--header 'Authorization: ACCESS_TOKEN' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "items": [
+        {
+            "title": "New Light Saber",
+            "description": "May the force be with you",
+            "picture_url": "",
+            "quantity": 1,
+            "currency_id": "${currency}",
+            "unit_price": ${price}
         }
     ],
     "shipments": {
@@ -148,24 +174,47 @@
     };
 
     const accessTokens = {
-      MLB: 'Bearer APP_USR-7092-062713-336b42c295318c34664458511cadc6ae-1874744027',
-      MLA: 'Bearer APP_USR-7092-062713-fa561c421d6eec6b43e67504f14b9bda-1877266222',
-      MLM: 'Bearer APP_USR-7092-062713-4eb2abf5a4da0901b807b826f40bdfa7-1874743543'
+      MLB: 'Bearer APP_USR-4670284813038273-062516-69446ce19360fa25cb43f65f1f72f5ef-1871926001',
+      MLA: 'Bearer APP_USR-750267766834259-112313-2d20e275a549dcdcb689015ce2c747cb-1371769672',
+      MLM: 'Bearer APP_USR-5183705321140844-062715-7cb78f63a79ec2fdd2cf4744c5f9d5f7-1874864993'
+    };
+
+    const currencyData = {
+      MLB: { currency: 'BRL', price: 100 },
+      MLA: { currency: 'ARS', price: 100000 },
+      MLM: { currency: 'MXN', price: 1000 }
     };
 
     document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
       input.addEventListener('change', function() {
-        document.getElementById('payButton').disabled = false;
+        const selectedSite = document.getElementById('siteSelector').value;
+        if (!selectedSite) {
+          $('#countryModal').modal('show');
+          this.checked = false;
+          return;
+        }
+        updatePayButtonState();
         updateApiRequest();
       });
     });
 
+    document.getElementById('siteSelector').addEventListener('change', function() {
+      updateTotalAmount();
+      updatePayButtonState();
+      updateApiRequest();
+    });
+
     document.getElementById('payButton').addEventListener('click', function() {
+      if (this.disabled) {
+        return;
+      }
+
       const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "";
       const selectedSite = document.getElementById('siteSelector').value;
       const accessToken = accessTokens[selectedSite];
       const apiUrl = 'https://api.mercadopago.com/checkout/preferences';
-      const requestData = getRequestData(selectedPaymentMethod);
+      const { currency, price } = currencyData[selectedSite];
+      const requestData = getRequestData(selectedPaymentMethod, currency, price);
 
       console.log('Request Data:', requestData);
       console.log('Access Token:', accessToken);
@@ -192,31 +241,42 @@
       });
     });
 
-    document.getElementById('siteSelector').addEventListener('change', function() {
-      updateApiRequest();
-    });
+    function updatePayButtonState() {
+      const countrySelected = document.getElementById('siteSelector').value !== "";
+      const paymentMethodSelected = document.querySelector('input[name="paymentMethod"]:checked') !== null;
+      const payButton = document.getElementById('payButton');
+      payButton.disabled = !(countrySelected && paymentMethodSelected);
+    }
 
     function updateApiRequest() {
       const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || "";
       const selectedSite = document.getElementById('siteSelector').value;
-      document.getElementById('apiRequest').innerText = apiSamples[selectedPaymentMethod] || `{
-  "order_id": 12345,
-  "amount": 99.99,
-  "currency": "USD",
-  "payment_method": "${selectedPaymentMethod}",
-  "site": "${selectedSite}"
-}`;
+      if (selectedPaymentMethod && selectedSite) {
+        const { currency, price } = currencyData[selectedSite];
+        document.getElementById('apiRequest').innerText = (apiSamples[selectedPaymentMethod] && apiSamples[selectedPaymentMethod](currency, price)) || ``;
+      }
     }
 
-    function getRequestData(paymentMethod) {
+    function updateTotalAmount() {
+      const selectedSite = document.getElementById('siteSelector').value;
+      if (selectedSite) {
+        const { price } = currencyData[selectedSite];
+        document.getElementById('totalAmount').innerText = `$${price}`;
+      }
+    }
+
+    function getRequestData(paymentMethod, currency, price) {
       switch (paymentMethod) {
         case 'CHO_PRO':
           return {
             items: [
               {
+                title: "New Light Saber",
+                description: "May the force be with you",
+                picture_url: "",
                 quantity: 1,
-                currency_id: "BRL",
-                unit_price: 10
+                currency_id: currency,
+                unit_price: price
               }
             ]
           };
@@ -228,8 +288,8 @@
                 description: "May the force be with you",
                 picture_url: "",
                 quantity: 1,
-                currency_id: "BRL",
-                unit_price: 10
+                currency_id: currency,
+                unit_price: price
               }
             ],
             purpose: "wallet_purchase"
@@ -238,9 +298,12 @@
           return {
             items: [
               {
+                title: "New Light Saber",
+                description: "May the force be with you",
+                picture_url: "",
                 quantity: 1,
-                currency_id: "BRL",
-                unit_price: 10
+                currency_id: currency,
+                unit_price: price
               }
             ],
             shipments: {
