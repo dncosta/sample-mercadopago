@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial calculation of total with default shipping (if any)
     updateTotal();
+
+    // Show/hide credit card form based on selection
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const creditCardForm = document.getElementById('creditCardForm');
+            if (this.value === 'Credit Card') {
+                creditCardForm.style.display = 'block';
+            } else {
+                creditCardForm.style.display = 'none';
+            }
+        });
+    });
 });
 
 function updateTotal() {
@@ -37,8 +49,14 @@ document.addEventListener('input', function() {
     const personalFormValid = [...document.querySelectorAll('#personalForm input')].every(input => input.value.trim() !== '');
     const addressFormValid = [...document.querySelectorAll('#addressForm input')].every(input => input.value.trim() !== '');
     const shippingSelected = document.querySelector('input[name="shippingOption"]:checked') !== null;
+    const paymentMethodSelected = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-    if (personalFormValid && addressFormValid && shippingSelected) {
+    let paymentFormValid = true;
+    if (paymentMethodSelected === 'Credit Card') {
+        paymentFormValid = [...document.querySelectorAll('#creditCardForm input')].every(input => input.value.trim() !== '');
+    }
+
+    if (personalFormValid && addressFormValid && shippingSelected && paymentFormValid) {
         document.getElementById('payButton').disabled = false;
     } else {
         document.getElementById('payButton').disabled = true;
@@ -46,6 +64,30 @@ document.addEventListener('input', function() {
 });
 
 function payNow() {
+    const paymentMethodSelected = document.querySelector('input[name="paymentMethod"]:checked').value;
+    
+    if (paymentMethodSelected === 'Credit Card') {
+        processCreditCardPayment();
+    } else {
+        // Existing Mercado Pago logic
+        processMercadoPagoPayment();
+    }
+}
+
+function processCreditCardPayment() {
+    // Show loading bar
+    document.getElementById('loadingBar').style.display = 'block';
+    document.getElementById('payButton').disabled = true;
+
+    // Simulate payment processing delay
+    setTimeout(function() {
+        // Hide loading bar and show payment message
+        document.getElementById('loadingBar').style.display = 'none';
+        document.getElementById('paymentMessage').style.display = 'block';
+    }, 3000);
+}
+
+function processMercadoPagoPayment() {
     const country = document.querySelector('.country-select').value;
     let accessToken = '';
     let currencyId = '';
