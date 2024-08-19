@@ -12,7 +12,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="#">My E-Commerce</a>
-        <select class="country-select form-select">
+        <select class="country-select form-select" onchange="saveSelectedCountry()">
             <option value="MEXICO" selected>MEXICO</option>
             <option value="BRAZIL">BRAZIL</option>
             <option value="ARGENTINA">ARGENTINA</option>
@@ -103,9 +103,13 @@
     <p>This is a sample of some of the integrations available in Mercado Pago. All requests made here are in a Sandbox Environment, so they won't create real payments.</p>
     <a href="https://dncosta.github.io/sample-mercadopago/old" id="olderVersionLink">SEE THE OLDER VERSION</a>
 </footer>
-
-
 <script src="script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        function saveSelectedCountry() {
+            const selectedCountry = document.querySelector('.country-select').value;
+            localStorage.setItem('selectedCountry', selectedCountry);
+        }
+</script>    
 </body>
 </html>
