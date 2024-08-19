@@ -82,24 +82,56 @@
                     </div>
                 </div>
                 <!-- Right Column -->
-                <div class="col-md-5">
-                    <h2>Order Summary</h2>
-                    <div class="order-summary mb-4">
-                        <p><strong>Product:</strong> SimRacing Cockpit Logitech Trophy</p>
-                        <p><strong>Quantity:</strong> <span id="checkoutQuantity">1</span></p>
-                        <p><strong>Subtotal:</strong> $<span id="checkoutSubtotal">10.00</span></p>
-                        <p><strong>Shipping:</strong> $<span id="shippingCost">0.00</span></p>
-                        <p><strong>Total:</strong> $<span id="checkoutTotal">10.00</span></p>
-                    </div>
-                    <h2>Payment Method</h2>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="mercadoPago" value="Mercado Pago" checked>
-                            <label class="form-check-label" for="mercadoPago">Mercado Pago</label>
-                        </div>
-                    </div>
-                    <button id="payButton" class="btn btn-primary w-100" disabled onclick="payNow()">PAY</button>
+        <div class="col-md-5">
+            <h2>Order Summary</h2>
+            <div class="order-summary mb-4">
+                <p><strong>Product:</strong> SimRacing Cockpit Logitech Trophy</p>
+                <p><strong>Quantity:</strong> <span id="checkoutQuantity">1</span></p>
+                <p><strong>Subtotal:</strong> $<span id="checkoutSubtotal">10.00</span></p>
+                <p><strong>Shipping:</strong> $<span id="shippingCost">0.00</span></p>
+                <p><strong>Total:</strong> $<span id="checkoutTotal">10.00</span></p>
+            </div>
+            <h2>Payment Method</h2>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="mercadoPago" value="Mercado Pago" checked>
+                    <label class="form-check-label" for="mercadoPago">Mercado Pago</label>
                 </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="Credit Card">
+                    <label class="form-check-label" for="creditCard">Credit Card</label>
+                </div>
+            </div>
+
+            <!-- Credit Card Form, initially hidden -->
+            <div id="creditCardForm" style="display: none;">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="cardName" placeholder="Name on Card" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="cardNumber" placeholder="Card Number" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" id="cardExpDate" placeholder="Exp. Date (MM/YY)" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" id="cardCVV" placeholder="CVV" required>
+                    </div>
+                </div>
+            </div>
+            <button id="payButton" class="btn btn-primary w-100" disabled onclick="payNow()">PAY</button>
+
+            <!-- Loading bar and Payment message -->
+            <div id="loadingBar" style="display: none; margin-top: 20px;">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div id="paymentMessage" style="display: none; margin-top: 20px;">
+                <p class="alert alert-success">Payment Authorized</p>
+            </div>
+        </div>
             </div>
         </div>
         <footer>
