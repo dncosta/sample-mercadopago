@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Retrieve the selected country from localStorage and set it in the checkout page
+    const savedCountry = localStorage.getItem('selectedCountry');
+    if (savedCountry) {
+        document.querySelector('.country-select').value = savedCountry;
+    }
+    
     const quantity = parseInt(localStorage.getItem('checkoutQuantity')) || 1;
     
     // Calculate the subtotal as quantity * 10
