@@ -1,6 +1,10 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure body takes full height of viewport */
+    margin: 0;
 }
 
 .navbar {
@@ -37,6 +41,7 @@ body {
 .container {
     margin-top: 30px;
     margin-bottom: 30px;
+    flex: 1; /* Allow container to grow and take available space */
 }
 
 .vip-product-page {
@@ -278,15 +283,13 @@ footer {
     padding: 10px 0;
     text-align: center;
     position: relative;
-    bottom: 0;
     width: 100%;
+    bottom: 0;
+    flex-shrink: 0; /* Ensure footer stays at bottom */
 }
-
 
 @media (max-width: 767px) {
     #addressForm .row .col-md-3, #addressForm .row .col-md-6 {
         margin-bottom: 10px;
     }
 }
-
-
