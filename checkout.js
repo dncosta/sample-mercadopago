@@ -22,7 +22,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Add event listeners for real-time validation
+    document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
+    document.getElementById('cardName').addEventListener('input', validateCardName);
+    document.getElementById('cardExpDate').addEventListener('input', validateExpDate);
+    document.getElementById('cardCVV').addEventListener('input', validateCVV);
 });
+
+function formatCardNumber(event) {
+    const input = event.target;
+    let cardNumber = input.value.replace(/\D/g, '').substring(0, 16); // Remove non-digits and limit to 16 digits
+    cardNumber = cardNumber.match(/.{1,4}/g)?.join(' ') || cardNumber; // Group digits into sets of 4
+    input.value = cardNumber;
+}
+
+function validateCardName(event) {
+    const input = event.target;
+    const value = input.value;
+    const valid = /^[a-zA-Z\s]*$/.test(value); // Only allow letters and spaces
+    if (!valid) {
+        input.setCustomValidity('Please enter a valid name without numbers.');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+
+function validateExpDate(event) {
+    const input = event.target;
+    const value = input.value;
+    const valid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(value); // Validate MM/YY format
+    if (!valid) {
+        input.setCustomValidity('Please enter a valid expiration date in MM/YY format.');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+
+function validateCVV(event) {
+    const input = event.target;
+    const value = input.value;
+    const valid = /^\d{3}$/.test(value); // Validate 3-digit CVV
+    if (!valid) {
+        input.setCustomValidity('Please enter a valid 3-digit CVV.');
+    } else {
+        input.setCustomValidity('');
+    }
+}
 
 function updateTotal() {
     const subtotal = parseFloat(document.getElementById('checkoutSubtotal').textContent);
@@ -53,7 +99,7 @@ document.addEventListener('input', function() {
 
     let paymentFormValid = true;
     if (paymentMethodSelected === 'Credit Card') {
-        paymentFormValid = [...document.querySelectorAll('#creditCardForm input')].every(input => input.value.trim() !== '');
+        paymentFormValid = validateCreditCardForm();
     }
 
     if (personalFormValid && addressFormValid && shippingSelected && paymentFormValid) {
@@ -62,6 +108,21 @@ document.addEventListener('input', function() {
         document.getElementById('payButton').disabled = true;
     }
 });
+
+function validateCreditCardForm() {
+    const cardNumber = document.getElementById('cardNumber').value.trim();
+    const cardName = document.getElementById('cardName').value.trim();
+    const cardExpDate = document.getElementById('cardExpDate').value.trim();
+    const cardCVV = document.getElementById('cardCVV').value.trim();
+
+    // Ensure all validations are correct
+    return (
+        /^[a-zA-Z\s]+$/.test(cardName) && // Name validation
+        /^\d{16}$/.test(cardNumber.replace(/\s/g, '')) && // Card number validation (ignoring spaces)
+        /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpDate) && // Expiration date validation
+        /^\d{3}$/.test(cardCVV) // CVV validation
+    );
+}
 
 function payNow() {
     const paymentMethodSelected = document.querySelector('input[name="paymentMethod"]:checked').value;
@@ -75,6 +136,11 @@ function payNow() {
 }
 
 function processCreditCardPayment() {
+    if (!validateCreditCardForm()) {
+        alert('Please ensure all credit card details are correct.');
+        return; // Stop if the form is not valid
+    }
+
     // Show loading bar
     document.getElementById('loadingBar').style.display = 'block';
     document.getElementById('payButton').disabled = true;
@@ -162,4 +228,4 @@ function fillDummyInfo() {
     // Trigger input event to enable shipping options and PAY button if valid
     document.getElementById('personalForm').dispatchEvent(new Event('input'));
     document.getElementById('addressForm').dispatchEvent(new Event('input'));
-}
+}    
