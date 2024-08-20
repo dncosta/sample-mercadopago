@@ -34,9 +34,9 @@ function calculateShippingVIP() {
     var shippingCostElement = document.getElementById("shippingCostVIP");
     if (zipcode.trim() !== "") {
         shippingCostElement.innerHTML = `
-            <p>7 days - $10.00</p>
-            <p>3 days - $15.00</p>
-            <p>1 day - $20.00</p>
+            <p>Carrier A - 7 days - $10.00</p>
+            <p>Carrier B - 3 days - $15.00</p>
+            <p>Mercado Envíos - 1 day - $20.00</p>
         `;
     } else {
         shippingCostElement.textContent = "";
@@ -48,9 +48,9 @@ function calculateShippingSidebar() {
     var shippingCostElement = document.getElementById("shippingCostSidebar");
     if (zipcode.trim() !== "") {
         shippingCostElement.innerHTML = `
-            <p>7 days - $10.00</p>
-            <p>3 days - $15.00</p>
-            <p>1 day - $20.00</p>
+            <p>Carrier A - 7 days - $10.00</p>
+            <p>Carrier B - 3 days - $15.00</p>
+            <p>Mercado Envíos - 1 day - $20.00</p>
         `;
     } else {
         shippingCostElement.textContent = "";
